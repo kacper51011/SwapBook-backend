@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "\"backend for Swapbook\"",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kacper51011/SwapBook-backend.git"
+  },
+  "author": "Kacper Tylec",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kacper51011/SwapBook-backend/issues"
+  },
+  "homepage": "https://github.com/kacper51011/SwapBook-backend#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^6.6.5",
+    "nodemon": "^2.0.20"
+  }
+}
