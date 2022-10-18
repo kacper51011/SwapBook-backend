@@ -1,13 +1,17 @@
-import express, { Express, Request, Response } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 
 
 dotenv.config();
 const port = process.env.PORT || 4000
-const app: Express = express()
-app.get('/', (req: Request, res: Response) => {
-    res.send('Express + TypeScript Server');
+const app = express()
+app.get('/', (req, res) => {
+    res.status(200).send('SwapBook');
 });
+
+const connectDB = require("./config/db")
+
+connectDB()
 
 app.listen(port, ()=> {console.log("new server started")})
 
