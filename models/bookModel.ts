@@ -1,29 +1,29 @@
 import mongoose, { Types } from "mongoose"
 
-const { Schema, Model} = mongoose
+const { Schema, model} = mongoose
 
 
-
+// to add : img, writtenBy
 interface IBook {
     name: string;
+    author: string;
     category: string;
-    swapFor: Types.Array<string>;
-    writtenBy: string;
-    img: string;
+    released: number;
+    swapFor: String;
     description: string;
-    created: Date
+    created: Date;
+    swapPlace: string
 }
 
 const bookSchema = new Schema<IBook>({
     name: { type: String, required: true},
+    author: { type: String, required: true},
     category: {type: String, required: true},
-    swapFor: {type: [String], required: true},
-    writtenBy: {type: String, required: true},
-    img: {type: String, required: true},
+    released: {type: Number, required: true},
+    swapFor: {type: String, required: true},
     description: {type: String, required: true},
-    created: {type: Date, default: Date.now}
+    swapPlace: {type: String, required: true }
 })
 
-const Book = new Model ("Book", bookSchema )
+export const Book = mongoose.model("Book", bookSchema )
 
-module.exports = Book
