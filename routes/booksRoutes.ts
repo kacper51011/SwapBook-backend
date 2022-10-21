@@ -1,14 +1,15 @@
 import express from "express"
-const {getBooks, createBook} = require("../controllers/booksController")
+const {getBooks, createBook, getOneBook} = require("../controllers/booksController")
  
 
 
 const router = express.Router()
 
+router.route("/").get(getBooks).post(createBook)
 
-router.get("/", getBooks)
+router.route("/:id").get(getOneBook)
 
-router.post("/", createBook)
+
 
 
 module.exports = router
