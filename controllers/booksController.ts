@@ -40,24 +40,24 @@ export const getBooks = async (req:Request, res:Response, next:NextFunction) => 
             sort = {[sortOpt[0]]: Number(sortOpt[1])}
         }
 
-       
-        let searchQuery = {}
+        const filterBySearch = req.params.searchQuery || ""
+        let search = {}
         let select = {}
-        const filterBySearch = req.query.search || ""
+        
         if (filterBySearch) {
             queryCondition = true
-            searchQuery = { $text: { $search: searchQuery } }
-        select = {
-            score: { $meta: "textScore" }
-        }
-        sort = { score: { $meta: "textScore" } }
+            search = { $text: { $search: filterBySearch } }
+            select = {
+                score: { $meta: "textScore" }
+            }
+            sort = { score: { $meta: "textScore" } }
         }
 
         if (queryCondition) {
             query = {
                 $and: [
                 categoryQuery,
-                searchQuery
+                search
 
                 ],
             };
@@ -65,18 +65,24 @@ export const getBooks = async (req:Request, res:Response, next:NextFunction) => 
         
 
         // books that should be visible on actual page
-        const books = await Book.find(query).skip(recordsPerPage * (pageNum - 1)).sort(sort).limit(recordsPerPage)
+        const books = await Book.find(query).select(select).skip(recordsPerPage * (pageNum - 1)).sort(sort).limit(recordsPerPage)
+        const booksLength = books.length
         // amount of pages to choose in pagination component
-        const paginationNumbers = Math.ceil(totalBooks / recordsPerPage)
+        const paginationNumbers = Math.ceil(booksLength / recordsPerPage)
 
 
         res.status(200).json({
-           books, pageNum, totalBooks, paginationNumbers
+           books, pageNum, totalBooks, booksLength, paginationNumbers
         })
-    } catch(err) {res.status(404).json({
-        status: "failed"
+    } catch(err) {
+        console.log(err)
+        res.status(404).json({
+        status: "failed",
+        
     })}
 }
+
+// searching for a single book, will be used for displaying subpage after clicking displayed book on the list
 
 export const getOneBook = async (req:Request, res:Response, next:NextFunction) => {
     try {

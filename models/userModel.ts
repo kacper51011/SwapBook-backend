@@ -1,4 +1,5 @@
 import mongoose, { Types } from "mongoose"
+import validator from "validator";
 
 const { Schema, model} = mongoose
 
@@ -16,7 +17,7 @@ const userSchema = new Schema<IUser>({
         type: String, required: true, unique: true
     },
     email: {
-        type: String, required: true, unique: true, lowercase: true
+        type: String, required: true, unique: true, lowercase: true , validate: [validator.isEmail, "invalid Email"]
     },
     password: {
         type: String, required: true, 
@@ -32,4 +33,4 @@ const userSchema = new Schema<IUser>({
 
 const User = mongoose.model("User", userSchema)
 
-module.exports = User
+export default User

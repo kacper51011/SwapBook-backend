@@ -1,9 +1,10 @@
 import express from "express";
 
-const apiRoutes = require("./booksRoutes")
 const app = express()
 
-
-app.use("/books", apiRoutes)
+const booksRoutes = require("./booksRoutes")
+app.use("/books", booksRoutes)
+const userRoutes = require("./userRoutes")
+app.use("/users", userRoutes)
 
 module.exports = app
