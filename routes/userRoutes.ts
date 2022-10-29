@@ -7,3 +7,5 @@ const router = express.Router()
 router.route("/signup").post(signUp)
 
 router.route("/").get(getUsers)
+
+module.exports= router
