@@ -9,7 +9,7 @@ export const getBooks = async (
   next: NextFunction
 ) => {
   try {
-    // query condition will store our filters (name filter and category filter) if only the queryCondition will be true
+    // query will store our filters (name filter and category filter) if only the queryCondition will be true
     let query = {};
     let queryCondition = false;
 

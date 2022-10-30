@@ -8,5 +8,6 @@ router.route("/signup").post(signUp);
 router.route("/login").post(signIn);
 
 router.route("/").get(getUsers);
+router.route("/:nickname").get(getUsers);
 
 module.exports = router;

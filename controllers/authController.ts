@@ -57,6 +57,8 @@ export const signIn = async (
   try {
     const { email, password } = req.body;
 
+    // email and password input check
+
     if (!email || !password) {
       return res.status(400).json({
         status: "failed",
@@ -67,6 +69,8 @@ export const signIn = async (
 
     const user = await User.findOne({ email }).select("+password");
 
+    // is user existing in database check
+
     if (!user) {
       return res.status(400).json({
         status: "failed",
@@ -74,6 +78,8 @@ export const signIn = async (
       });
       next();
     }
+
+    // is the password correct check
 
     const passwordValidation = await bcrypt.compare(password, user.password);
     if (!passwordValidation) {
@@ -84,9 +90,21 @@ export const signIn = async (
       next();
     }
 
-    const token = "";
-    res.status(200).json({ status: "success" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+    });
+    res.status(200).json({ status: "success", token: token });
   } catch (err) {
     next(err);
   }
+};
+
+// this controller will protect our routes (the ones where being logged in is needed)
+
+export const tokenValidation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  next();
 };
