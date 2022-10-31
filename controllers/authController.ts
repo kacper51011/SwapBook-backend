@@ -3,6 +3,18 @@ import express, { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 const jwt = require("jsonwebtoken");
 
+interface IJWT {
+  id: string;
+  email: string;
+  nickname: string;
+}
+
+export interface customRequest extends Request {
+  user?: IJWT;
+}
+
+// sign up / register
+
 export const signUp = async (
   req: Request,
   res: Response,
@@ -36,18 +48,31 @@ export const signUp = async (
     }
     const newUser = await User.create(req.body);
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
-    });
+    const token = jwt.sign(
+      { id: newUser._id, nickname: newUser.nickname, email: newUser.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE,
+      }
+    );
 
-    res.status(201).json({
-      status: "success",
-    });
+    res
+      .status(201)
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      })
+      .json({
+        status: "success",
+      });
     next();
   } catch (err) {
     next(err);
   }
 };
+
+// sign in / login
 
 export const signIn = async (
   req: Request,
@@ -90,10 +115,25 @@ export const signIn = async (
       next();
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE,
-    });
-    res.status(200).json({ status: "success", token: token });
+    const token = jwt.sign(
+      { id: user._id, nickname: user.nickname, email: user.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE,
+      }
+    );
+
+    res
+      .status(200)
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      })
+      .json({
+        status: "success",
+      });
+    next();
   } catch (err) {
     next(err);
   }
@@ -101,10 +141,32 @@ export const signIn = async (
 
 // this controller will protect our routes (the ones where being logged in is needed)
 
-export const tokenValidation = async (
-  req: Request,
+export const verifyIsLoggedIn = async (
+  req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
+  try {
+    const token = req.cookies.access_token;
+    if (!token) {
+      return res.status(403).send("Token is required for authentication!");
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+
+      next();
+    } catch (err) {
+      return res.status(400).send("Invalid token!");
+    }
+    next();
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
+      message: err,
+    });
+  }
+
   next();
 };

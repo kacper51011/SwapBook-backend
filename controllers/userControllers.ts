@@ -1,8 +1,9 @@
 import express, { Request, Response, NextFunction } from "express";
 import User from "../models/userModel";
+import { customRequest } from "./authController";
 
 export const getUsers = async (
-  req: Request,
+  req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -16,13 +17,14 @@ export const getUsers = async (
 
     const users = await User.find(query);
 
-    res.status(200).json({
+    return res.status(200).json({
       data: {
         users,
       },
     });
+    next();
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       status: "failed",
       message: err,
     });
