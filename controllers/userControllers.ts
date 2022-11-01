@@ -22,11 +22,60 @@ export const getUsers = async (
         users,
       },
     });
-    next();
   } catch (err) {
-    return res.status(400).json({
-      status: "failed",
-      message: err,
-    });
+    return err;
   }
+};
+
+// Controller for updating user data
+
+export const updateUser = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // checking if there is a user logged in
+    if (!req.user) {
+      return res.status(400).json({
+        status: "failed",
+        message: "invalid credentials",
+      });
+    }
+    // getting the user data from database (based on the token)
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(400).json({
+        status: "failed",
+        message: "invalid credentials",
+      });
+    }
+
+    user.nickname = req.body.nickname || user.nickname;
+    user.photo = req.body.photo || user.photo || undefined;
+    user.password = user.password;
+
+    if (req.body.oldPassword && req.body.oldPassword === user.password) {
+      user.password = req.body.password;
+    }
+    if (req.body.oldPassword && req.body.oldPassword !== user.password) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Invalid old password!",
+      });
+    }
+
+    await user.save();
+  } catch (error) {}
+};
+
+export const getUserById = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = User.findById(req.params.id).orFail();
+    return res.send(user);
+  } catch (err) {}
 };

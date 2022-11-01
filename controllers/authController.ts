@@ -10,7 +10,7 @@ interface IJWT {
 }
 
 export interface customRequest extends Request {
-  user?: IJWT;
+  user?: IJWT | undefined;
 }
 
 // sign up / register
@@ -26,25 +26,21 @@ export const signUp = async (
     // inputs check
     if (!(nickname && email && password)) {
       return res.status(400).send("all inputs are required");
-      next();
     }
     // email already in database check
     let userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).send("this email is already in use");
-      next();
     }
 
     // nickname already in database check
     userExists = await User.findOne({ nickname });
     if (userExists) {
       return res.status(400).send("this nickname is already in use");
-      next();
     }
     // confirm password === password check
     if (password !== confirmPassword) {
       return res.status(400).send("passwords do not match!");
-      next();
     }
     const newUser = await User.create(req.body);
 
@@ -68,7 +64,7 @@ export const signUp = async (
       });
     next();
   } catch (err) {
-    next(err);
+    next(console.log(err));
   }
 };
 
@@ -148,6 +144,7 @@ export const verifyIsLoggedIn = async (
 ) => {
   try {
     const token = req.cookies.access_token;
+
     if (!token) {
       return res.status(403).send("Token is required for authentication!");
     }
@@ -155,17 +152,11 @@ export const verifyIsLoggedIn = async (
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
-
-      next();
     } catch (err) {
       return res.status(400).send("Invalid token!");
     }
-    next();
   } catch (err) {
-    return res.status(400).json({
-      status: "failed",
-      message: err,
-    });
+    return res.status(400).send("something went wrong with your token!");
   }
 
   next();
