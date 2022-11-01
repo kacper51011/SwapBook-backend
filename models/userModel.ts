@@ -10,7 +10,7 @@ interface IUser {
   password: string;
   confirmPassword: string | undefined;
   photo?: string;
-  swaps?: [];
+  swaps?: Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -33,12 +33,12 @@ const userSchema = new Schema<IUser>({
   },
   confirmPassword: {
     type: String,
-    required: true,
   },
 
   photo: {
     type: String,
   },
+  swaps: [{ type: Schema.Types.ObjectId, ref: "Book" }],
 });
 
 userSchema.pre("save", async function (next) {

@@ -24,7 +24,7 @@ const bookSchema = new Schema<IBook>({
   description: { type: String, required: true, minlength: 10, maxlength: 200 },
   swapPlace: { type: String, required: true },
   created: { type: Date, default: Date.now() },
-  createdBy: { type: Schema.Types.ObjectId },
+  createdBy: { type: Schema.Types.ObjectId, ref: "User" },
 });
 
 export const Book = mongoose.model("Book", bookSchema);

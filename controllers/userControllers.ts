@@ -68,8 +68,10 @@ export const getUserById = async (
   next: NextFunction
 ) => {
   try {
-    const user = User.findById(req.params.id).orFail();
-    return res.send(user);
+    const user = await User.findById(req.params.id).orFail();
+    return res.status(200).json({
+      user: user,
+    });
   } catch (err) {
     next(err);
   }

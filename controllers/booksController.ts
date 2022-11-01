@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { Book } from "../models/bookModel";
+import User from "../models/userModel";
 import { customRequest } from "./authController";
 
 // Controller for getting all the Books data
@@ -108,9 +109,13 @@ export const createBook = async (
 ) => {
   try {
     const newBook = req.body;
-    newBook.createdBy = { id: req.user?.id, nickname: req.user?.nickname };
+    newBook.createdBy = req.user?.id;
 
     const createdBook = await Book.create(newBook);
+    const creator = await User.findById(req.user?.id);
+
+    creator?.swaps?.push(createdBook._id);
+    creator?.save();
 
     res.status(201).json({
       status: "success",
@@ -121,7 +126,7 @@ export const createBook = async (
   } catch (err) {
     res.status(401).json({
       status: "fail",
-      message: "invalid data",
+      message: err,
     });
     console.log(err);
   }
