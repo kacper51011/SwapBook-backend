@@ -12,7 +12,7 @@ interface IBook {
   description: string;
   created: Date;
   swapPlace: string;
-  createdBy: string;
+  createdBy: Types.ObjectId;
 }
 
 const bookSchema = new Schema<IBook>({
@@ -24,6 +24,7 @@ const bookSchema = new Schema<IBook>({
   description: { type: String, required: true, minlength: 10, maxlength: 200 },
   swapPlace: { type: String, required: true },
   created: { type: Date, default: Date.now() },
+  createdBy: { type: Schema.Types.ObjectId },
 });
 
 export const Book = mongoose.model("Book", bookSchema);

@@ -35,15 +35,8 @@ export const updateUser = async (
   next: NextFunction
 ) => {
   try {
-    // checking if there is a user logged in
-    if (!req.user) {
-      return res.status(400).json({
-        status: "failed",
-        message: "invalid credentials",
-      });
-    }
     // getting the user data from database (based on the token)
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user?.id);
     if (!user) {
       return res.status(400).json({
         status: "failed",
@@ -77,5 +70,7 @@ export const getUserById = async (
   try {
     const user = User.findById(req.params.id).orFail();
     return res.send(user);
-  } catch (err) {}
+  } catch (err) {
+    next(err);
+  }
 };

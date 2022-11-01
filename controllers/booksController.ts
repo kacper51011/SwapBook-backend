@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { Book } from "../models/bookModel";
+import { customRequest } from "./authController";
 
 // Controller for getting all the Books data
 
@@ -101,17 +102,20 @@ export const getOneBook = async (
 
 // Controller for Post request
 export const createBook = async (
-  req: Request,
+  req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const newBook = await Book.create(req.body);
+    const newBook = req.body;
+    newBook.createdBy = { id: req.user?.id, nickname: req.user?.nickname };
+
+    const createdBook = await Book.create(newBook);
 
     res.status(201).json({
       status: "success",
       data: {
-        book: newBook,
+        book: createdBook,
       },
     });
   } catch (err) {

@@ -156,7 +156,7 @@ export const verifyIsLoggedIn = async (
       return res.status(400).send("Invalid token!");
     }
   } catch (err) {
-    return res.status(400).send("something went wrong with your token!");
+    return next(err);
   }
 
   next();
