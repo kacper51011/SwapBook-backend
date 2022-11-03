@@ -4,6 +4,7 @@ const {
   getBooks,
   createBook,
   getOneBook,
+  uploadImage,
 } = require("../controllers/booksController");
 
 const router = express.Router();
@@ -13,6 +14,7 @@ router.get("/category/:category/search/:searchQuery", getBooks);
 router.get("/category/:category", getBooks);
 router.get("/search/:searchQuery", getBooks);
 router.get("/", getBooks);
+router.post("/upload/", uploadImage);
 
 router.route("/:id").get(getOneBook);
 

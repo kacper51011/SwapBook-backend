@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, response } from "express";
 import { Book } from "../models/bookModel";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
@@ -130,4 +130,21 @@ export const createBook = async (
     });
     console.log(err);
   }
+};
+
+export const uploadImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.files || Boolean(req.files.images) == false) {
+      return res.status(400).send("no message uploaded");
+    }
+    if (Array.isArray(req.files.media)) {
+      res.send(`you sent ${req.files.media.length} images`);
+    } else {
+      res.send("you sent one image");
+    }
+  } catch (err) {}
 };
