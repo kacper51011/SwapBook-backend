@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction, response } from "express";
 import { Book } from "../models/bookModel";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
+import { imageValidate } from "../utils/imageValidate";
 
 // Controller for getting all the Books data
 
@@ -139,8 +140,11 @@ export const uploadImage = async (
 ) => {
   try {
     if (!req.files || Boolean(req.files.images) == false) {
-      return res.status(400).send("no message uploaded");
+      return res.status(400).send("no image uploaded");
     }
+
+    const validateImageRequest = imageValidate(req.files.images);
+
     if (Array.isArray(req.files.media)) {
       res.send(`you sent ${req.files.media.length} images`);
     } else {
