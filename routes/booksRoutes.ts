@@ -9,13 +9,15 @@ const {
 
 const router = express.Router();
 
-router.route("/").get(getBooks).post(verifyIsLoggedIn, createBook);
-router.get("/category/:category/search/:searchQuery", getBooks);
-router.get("/category/:category", getBooks);
-router.get("/search/:searchQuery", getBooks);
-router.get("/", getBooks);
-router.post("/upload/", uploadImage);
-
+// public routes
+router.route("/").get(getBooks);
+router.route("/category/:category/search/:searchQuery").get(getBooks);
+router.route("/category/:category").get(getBooks);
+router.route("/search/:searchQuery").get(getBooks);
 router.route("/:id").get(getOneBook);
+// protected routes (only for logged in users)
+router.use(verifyIsLoggedIn);
+router.route("/").post(createBook);
+router.route("/upload/").post(uploadImage);
 
 module.exports = router;
