@@ -1,10 +1,8 @@
 import fileUpload from "express-fileupload";
 
-interface IImageValidate {
-  images: fileUpload.UploadedFile | fileUpload.UploadedFile[];
-}
-
-export const imageValidate = (images: IImageValidate) => {
+export const imageValidate = (
+  images: fileUpload.UploadedFile | fileUpload.UploadedFile[]
+) => {
   let imagesTable = [];
 
   //   checking if the images argument is an array
