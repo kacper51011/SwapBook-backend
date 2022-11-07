@@ -2,7 +2,7 @@ import mongoose, { Types } from "mongoose";
 
 const { Schema, model } = mongoose;
 
-// to add : img, writtenBy
+// todo add : img,
 interface IBook {
   name: string;
   author: string;

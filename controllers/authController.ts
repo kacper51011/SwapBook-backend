@@ -151,6 +151,7 @@ export const verifyIsLoggedIn = async (
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // assigning the req.user to the decoded token, it allow us to use user data after authorization
       req.user = decoded;
     } catch (err) {
       return res.status(400).send("Invalid token!");

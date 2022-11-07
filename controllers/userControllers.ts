@@ -3,7 +3,7 @@ import User from "../models/userModel";
 import { customRequest } from "./authController";
 
 export const getUsers = async (
-  req: customRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -62,16 +62,19 @@ export const updateUser = async (
   } catch (error) {}
 };
 
+// Controller for getting user by ID (I will probably not merge this controller with the first getUser, the cause is authorization and the usage of information)
 export const getUserById = async (
   req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(req.params.id).orFail();
-    return res.status(200).json({
-      user: user,
-    });
+    if (req.user) {
+      const user = await User.findById(req.user.id).orFail();
+      return res.status(200).json({
+        user: user,
+      });
+    }
   } catch (err) {
     next(err);
   }
