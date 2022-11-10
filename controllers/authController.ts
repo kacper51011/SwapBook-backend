@@ -61,6 +61,9 @@ export const signUp = async (
       })
       .json({
         status: "success",
+        data: {
+          newUser,
+        },
       });
     next();
   } catch (err) {
@@ -76,7 +79,8 @@ export const signIn = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = req.body;
+    // todo: create doNotLogout functions
+    const { email, password, doNotLogout } = req.body;
 
     // email and password input check
 
@@ -85,7 +89,6 @@ export const signIn = async (
         status: "failed",
         message: "Provide email and password",
       });
-      next();
     }
 
     const user = await User.findOne({ email }).select("+password");
@@ -97,7 +100,6 @@ export const signIn = async (
         status: "failed",
         message: "Can`t find any user with that email",
       });
-      next();
     }
 
     // is the password correct check
@@ -108,7 +110,6 @@ export const signIn = async (
         status: "failed",
         message: "Uncorrect password",
       });
-      next();
     }
 
     const token = jwt.sign(
@@ -119,16 +120,26 @@ export const signIn = async (
       }
     );
 
-    res
-      .status(200)
-      .cookie("access_token", token, {
+    let cookieOptions = {};
+    if (doNotLogout) {
+      cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-      })
-      .json({
-        status: "success",
-      });
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      };
+    } else {
+      cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      };
+    }
+
+    res.status(200).cookie("access_token", token, cookieOptions).json({
+      status: "success",
+      user: user,
+    });
     next();
   } catch (err) {
     next(err);
