@@ -25,22 +25,34 @@ export const signUp = async (
 
     // inputs check
     if (!(nickname && email && password)) {
-      return res.status(400).send("all inputs are required");
+      return res.status(400).json({
+        status: "failed",
+        message: "Provide all inputs!",
+      });
     }
     // email already in database check
     let userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).send("this email is already in use");
+      return res.status(400).json({
+        status: "failed",
+        message: "email already in use!",
+      });
     }
 
     // nickname already in database check
     userExists = await User.findOne({ nickname });
     if (userExists) {
-      return res.status(400).send("this nickname is already in use");
+      return res.status(400).json({
+        status: "failed",
+        message: "nickname already in use!",
+      });
     }
     // confirm password === password check
     if (password !== confirmPassword) {
-      return res.status(400).send("passwords do not match!");
+      return res.status(400).json({
+        status: "failed",
+        message: "passwords do not match!",
+      });
     }
     const newUser = await User.create(req.body);
 
@@ -79,8 +91,7 @@ export const signIn = async (
   next: NextFunction
 ) => {
   try {
-    // todo: create doNotLogout functions
-    const { email, password, doNotLogout } = req.body;
+    const { email, password, dontLogout } = req.body;
 
     // email and password input check
 
@@ -121,7 +132,7 @@ export const signIn = async (
     );
 
     let cookieOptions = {};
-    if (doNotLogout) {
+    if (dontLogout) {
       cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -139,6 +150,7 @@ export const signIn = async (
     res.status(200).cookie("access_token", token, cookieOptions).json({
       status: "success",
       user: user,
+      cookieOptions: cookieOptions,
     });
     next();
   } catch (err) {
