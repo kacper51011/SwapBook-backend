@@ -73,9 +73,7 @@ export const signUp = async (
       })
       .json({
         status: "success",
-        data: {
-          newUser,
-        },
+        message: "successfully registered, now log in!",
       });
     next();
   } catch (err) {
@@ -147,11 +145,17 @@ export const signIn = async (
       };
     }
 
-    res.status(200).cookie("access_token", token, cookieOptions).json({
-      status: "success",
-      user: user,
-      cookieOptions: cookieOptions,
-    });
+    res
+      .status(200)
+      .cookie("access_token", token, cookieOptions)
+      .json({
+        status: "success",
+        user: {
+          id: user._id,
+          nickname: user.nickname,
+        },
+        cookieOptions: cookieOptions,
+      });
     next();
   } catch (err) {
     next(err);
@@ -180,8 +184,22 @@ export const verifyIsLoggedIn = async (
       return res.status(400).send("Invalid token!");
     }
   } catch (err) {
-    return next(err);
+    return res.status(400).send("invalid token!");
   }
 
   next();
+};
+// controller used by client side, used for verification on Protected routes
+export const getToken = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const accessToken = req.cookies["access_token"];
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    return res.status(200).json({ auth: true });
+  } catch (err) {
+    return res.status(403).json({ auth: false });
+  }
 };

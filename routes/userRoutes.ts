@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getToken,
   signIn,
   signUp,
   verifyIsLoggedIn,
@@ -11,9 +12,10 @@ import {
 } from "../controllers/userControllers";
 
 const router = express.Router();
-// sign up and sign in routes (auth)
+// sign up, sign in and getToken routes (auth)
 router.route("/signup").post(signUp);
 router.route("/login").post(signIn);
+router.route("/getToken").get(getToken);
 
 // Protected routes (only for logged in users)
 router.use(verifyIsLoggedIn);
