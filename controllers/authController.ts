@@ -172,19 +172,15 @@ export const verifyIsLoggedIn = async (
   try {
     const token = req.cookies.access_token;
 
-    if (!token) {
-      return res.status(403).send("Token is required for authentication!");
-    }
-
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
       // assigning the req.user to the decoded token, it allow us to use user data after authorization
       req.user = decoded;
     } catch (err) {
-      return res.status(400).send("Invalid token!");
+      next(err);
     }
   } catch (err) {
-    return res.status(400).send("invalid token!");
+    return next(err);
   }
 
   next();
@@ -201,5 +197,19 @@ export const getToken = async (
     return res.status(200).json({ auth: true });
   } catch (err) {
     return res.status(403).json({ auth: false });
+  }
+  next();
+};
+
+export const logout = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    res.clearCookie("access_token");
+    return res.status(200).json({ message: "user logged out" });
+  } catch (err) {
+    return res.status(400).json({ message: "user can not log out" });
   }
 };

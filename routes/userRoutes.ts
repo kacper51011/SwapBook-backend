@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getToken,
+  logout,
   signIn,
   signUp,
   verifyIsLoggedIn,
@@ -25,5 +26,6 @@ router.route("/:nickname").get(getUsers);
 router.route("/profile/:id").get(getUserById);
 // created to change the data in personal profile page
 router.route("/profile/settings").put(updateUser);
+router.route("/logout").delete(logout);
 
 module.exports = router;

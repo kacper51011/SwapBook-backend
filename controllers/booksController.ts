@@ -80,6 +80,8 @@ export const getBooks = async (
     console.log(err);
     res.status(404).json({
       status: "failed",
+      message:
+        "something went wrong, try again later or change your search values",
     });
   }
 };
