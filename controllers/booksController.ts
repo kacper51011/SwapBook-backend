@@ -111,23 +111,24 @@ export const createBook = async (
   next: NextFunction
 ) => {
   try {
+    console.log("123");
     const {
       nameOfTheBook,
       author,
       category,
-      released,
+      releaseDate,
       swapFor,
       description,
       swapPlace,
     } = req.body;
     if (
       !nameOfTheBook ||
-      author ||
-      category ||
-      released ||
-      swapFor ||
-      description ||
-      swapPlace
+      !author ||
+      !category ||
+      !releaseDate ||
+      !swapFor ||
+      !description ||
+      !swapPlace
     ) {
       return res
         .status(400)
@@ -138,6 +139,7 @@ export const createBook = async (
 
     const createdBook = await Book.create(newBook);
     const creator = await User.findById(req.user?.id);
+    console.log(req.user);
 
     creator?.swaps?.push(createdBook._id);
     creator?.save();
@@ -149,11 +151,10 @@ export const createBook = async (
       },
     });
   } catch (err) {
-    res.status(401).json({
+    return res.status(401).json({
       status: "fail",
       message: err,
     });
-    console.log(err);
   }
 };
 

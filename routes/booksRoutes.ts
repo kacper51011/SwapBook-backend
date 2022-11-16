@@ -17,7 +17,7 @@ router.route("/search/:searchQuery").get(getBooks);
 router.route("/:id").get(getOneBook);
 // protected routes (only for logged in users)
 router.use(verifyIsLoggedIn);
-router.route("/").post(createBook);
+router.route("/create").post(createBook);
 router.route("/upload/").post(uploadImage);
 
 module.exports = router;
