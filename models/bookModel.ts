@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 
 // todo add : img,
 interface IBook {
-  name: string;
+  nameOfTheBook: string;
   author: string;
   category: string;
   released: number;
@@ -16,7 +16,7 @@ interface IBook {
 }
 
 const bookSchema = new Schema<IBook>({
-  name: { type: String, required: true, minlength: 5, maxlength: 50 },
+  nameOfTheBook: { type: String, required: true, minlength: 5, maxlength: 50 },
   author: { type: String, required: true, minlength: 4, maxlength: 30 },
   category: { type: String, required: true },
   released: { type: Number, required: true, min: 1900, max: 2022 },

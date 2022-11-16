@@ -111,6 +111,28 @@ export const createBook = async (
   next: NextFunction
 ) => {
   try {
+    const {
+      nameOfTheBook,
+      author,
+      category,
+      released,
+      swapFor,
+      description,
+      swapPlace,
+    } = req.body;
+    if (
+      !nameOfTheBook ||
+      author ||
+      category ||
+      released ||
+      swapFor ||
+      description ||
+      swapPlace
+    ) {
+      return res
+        .status(400)
+        .json({ status: "failed", message: "Lack of the data about book" });
+    }
     const newBook = req.body;
     newBook.createdBy = req.user?.id;
 
