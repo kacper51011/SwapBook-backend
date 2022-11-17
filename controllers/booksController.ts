@@ -64,10 +64,13 @@ export const getBooks = async (
       .select(select)
       .skip(recordsPerPage * (pageNum - 1))
       .sort(sort)
-      .limit(recordsPerPage);
+      .limit(recordsPerPage)
+      .select("-__v");
     const booksLength = books.length;
     // amount of pages to choose in pagination component
-    const paginationNumbers = Math.ceil(booksLength / recordsPerPage);
+    const paginationNumbers = Math.ceil(totalBooks / recordsPerPage);
+
+    // todo: debug the pagination after filtering and debug the search query
 
     res.status(200).json({
       books,
@@ -96,12 +99,17 @@ export const getOneBook = async (
   try {
     const oneBook = await Book.findById(req.params.id);
 
-    res.status(200).json({
+    return res.status(200).json({
       data: {
         oneBook,
       },
     });
-  } catch (err) {}
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
+      message: "couldnt`t fetch the single book data",
+    });
+  }
 };
 
 // Controller for Post request

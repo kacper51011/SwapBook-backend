@@ -14,7 +14,7 @@ router.route("/").get(getBooks);
 router.route("/category/:category/search/:searchQuery").get(getBooks);
 router.route("/category/:category").get(getBooks);
 router.route("/search/:searchQuery").get(getBooks);
-router.route("/:id").get(getOneBook);
+router.route("/getBook/:id").get(getOneBook);
 // protected routes (only for logged in users)
 router.use(verifyIsLoggedIn);
 router.route("/create").post(createBook);

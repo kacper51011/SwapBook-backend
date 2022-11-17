@@ -8,7 +8,7 @@ interface IBook {
   author: string;
   category: string;
   releaseDate: number;
-  swapFor: String;
+  swapFor: string;
   description: string;
   created: Date;
   swapPlace: string;
