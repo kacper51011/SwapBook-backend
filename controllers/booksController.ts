@@ -99,9 +99,14 @@ export const getOneBook = async (
   try {
     const oneBook = await Book.findById(req.params.id);
 
+    const userId = oneBook?.createdBy;
+
+    const creator = await User.findById(userId).select("-email").select("-__v");
+
     return res.status(200).json({
       data: {
         oneBook,
+        creator,
       },
     });
   } catch (err) {
