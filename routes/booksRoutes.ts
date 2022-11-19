@@ -18,6 +18,5 @@ router.route("/getBook/:id").get(getOneBook);
 // protected routes (only for logged in users)
 router.use(verifyIsLoggedIn);
 router.route("/create").post(createBook);
-router.route("/upload/").post(uploadImage);
 
 module.exports = router;

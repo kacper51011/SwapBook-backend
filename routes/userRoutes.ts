@@ -10,6 +10,7 @@ import {
   getUserById,
   getUsers,
   updateUser,
+  uploadUserPhoto,
 } from "../controllers/userControllers";
 
 const router = express.Router();
@@ -25,7 +26,7 @@ router.route("/:nickname").get(getUsers);
 // created to fill the inputs with default values in personal profile page
 router.route("/profile/:id").get(getUserById);
 // created to change the data in personal profile page
-router.route("/profile/settings").put(updateUser);
+router.route("/profile/settings").put(uploadUserPhoto, updateUser);
 router.route("/logout").delete(logout);
 
 module.exports = router;

@@ -2,7 +2,6 @@ import express, { Request, Response, NextFunction, response } from "express";
 import { Book } from "../models/bookModel";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
-import { imageValidate } from "../utils/imageValidate";
 
 // Controller for getting all the Books data
 
@@ -169,37 +168,4 @@ export const createBook = async (
       message: err,
     });
   }
-};
-
-export const uploadImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    if (!req.files || Boolean(req.files.images) == false) {
-      return res.status(400).send("no image uploaded");
-    }
-
-    const validateImageRequest = imageValidate(req.files.images);
-    if (validateImageRequest.err) {
-      return res.status(400).send(validateImageRequest.err);
-    }
-
-    const path = require("path");
-    const { v4: uuidv4 } = require("uuid");
-
-    // todo <- I will use that sentence to find the place in code where i should do something later but not now
-    //  to add: after connecting backend with frontend (the files together) -> create a path to the frontend images folder to store them there
-
-    let imagesTable = [];
-    if (Array.isArray(req.files.images)) {
-      imagesTable = req.files.images;
-    } else {
-      imagesTable.push(req.files.images);
-    }
-
-    for (let image of imagesTable) {
-    }
-  } catch (err) {}
 };
