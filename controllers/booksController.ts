@@ -1,7 +1,11 @@
 import express, { Request, Response, NextFunction, response } from "express";
+import fileUpload from "express-fileupload";
 import { Book } from "../models/bookModel";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
+import { IMulter } from "./userControllers";
+
+// todo: deleting books
 
 // Controller for getting all the Books data
 
@@ -165,6 +169,62 @@ export const createBook = async (
   } catch (err) {
     return res.status(401).json({
       status: "fail",
+      message: err,
+    });
+  }
+};
+
+// implementing images upload for book(multiple, max 3 photos)
+const multer = require("multer");
+const sharp = require("sharp");
+
+const multerStorage = multer.memoryStorage();
+
+// book images filter
+
+const multerFilter = ({ req, file, cb }: IMulter) => {
+  const acceptableExtension = "jpg" || "png" || "jpeg";
+  const extension = file.mimetype.split("/")[1];
+  if (extension == acceptableExtension) {
+    cb(null, true);
+  } else {
+    cb(new Error("only images are allowed!"), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  limits: { fileSize: 15000000 },
+});
+
+export const uploadImages = upload.array("images", 3);
+
+// book images resizing
+
+export const resizeBookPhotos = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.files || !req.files.images) return next();
+
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    // setting filename, cause it will be used in put controller later (as a jpeg default cause we will set it to jpeg with sharp)
+
+    const imageArray = req.files.images as fileUpload.UploadedFile[];
+    await Promise.all(
+      imageArray.map(async (file, i) => {
+        const filename = `book-${uniqueSuffix}-${i + 1}.jpeg`;
+      })
+    );
+
+    next();
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
       message: err,
     });
   }

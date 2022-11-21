@@ -2,55 +2,11 @@ import express, { Request, Response, NextFunction } from "express";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
 
-interface IMulter {
+export interface IMulter {
   req: customRequest;
   file: Express.Multer.File;
   cb: (error: Error | null, destination: string | boolean) => void;
 }
-
-// implementing images
-const multer = require("multer");
-const sharp = require("sharp");
-
-const multerStorage = multer.memoryStorage();
-
-const multerFilter = ({ req, file, cb }: IMulter) => {
-  const acceptableExtension = "jpg" || "png" || "jpeg";
-  const extension = file.mimetype.split("/")[1];
-  if (extension == acceptableExtension) {
-    cb(null, true);
-  } else {
-    cb(new Error("only images are allowed!"), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-export const uploadUserPhoto = upload.single("photo");
-
-export const resizeUserPhoto = (
-  req: customRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.file) return next();
-
-  const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-
-  // setting filename, cause it will be used in put controller later (as a jpeg default cause we will set it to jpeg with sharp)
-  req.file.filename = `user-${req.user?.id}-${uniqueSuffix}.jpeg}`;
-
-  // resizing the image, etc
-  sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat("jpeg")
-    .jpeg({ quality: 90 })
-    .toFile(`../public/images/books/${req.file.filename}`);
-
-  next();
-};
 
 export const getUsers = async (
   req: Request,
@@ -87,15 +43,17 @@ export const updateUser = async (
   try {
     // getting the user data from database (based on the token)
     const user = await User.findById(req.user?.id);
+    console.log(user);
     if (!user) {
       return res.status(400).json({
         status: "failed",
         message: "invalid credentials",
       });
     }
-
-    user.nickname = req.body.nickname || user.nickname;
-    user.password = user.password;
+    if (req.body.nickname) {
+      user.nickname = req.body.nickname;
+    }
+    user.password = req.body.password || user.password;
     if (req.file) {
       user.photo = req.file.filename;
     }
@@ -121,13 +79,77 @@ export const getUserById = async (
   next: NextFunction
 ) => {
   try {
-    if (req.user) {
-      const user = await User.findById(req.user.id).orFail();
-      return res.status(200).json({
-        user: user,
+    if (!req.user) {
+      return res.status(403).json({
+        status: "failed",
+        message: "unauthorized",
       });
     }
+    const user = await User.findById(req.user.id);
+    return res.status(200).json({
+      user,
+    });
   } catch (err) {
-    next(err);
+    return res.status(400).json({
+      status: "failed",
+      message: err,
+    });
+  }
+};
+
+// implementing image upload for user (photo)
+const multer = require("multer");
+const sharp = require("sharp");
+
+const multerStorage = multer.memoryStorage();
+
+// image filter
+
+const multerFilter = ({ req, file, cb }: IMulter) => {
+  const acceptableExtension = "jpg" || "png" || "jpeg";
+  const extension = file.mimetype.split("/")[1];
+  if (extension == acceptableExtension) {
+    cb(null, true);
+  } else {
+    cb(new Error("only images are allowed!"), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  limits: { fileSize: 10000000 },
+});
+export const uploadUserPhoto = upload.single("photo");
+
+// todo in patch:
+
+export const resizeUserPhoto = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // todo: in patch, check if user already have a photo, then delete the previous one
+    if (!req.file) return next();
+
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    // setting filename
+    req.file.filename = `user-${req.user?.id}-${uniqueSuffix}.jpeg}`;
+
+    // resizing the image, etc
+    await sharp(req.file.buffer)
+      .resize(500, 500)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`../public/images/users/${req.file.filename}`);
+
+    next();
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
+      message: err,
+    });
   }
 };

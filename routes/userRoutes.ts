@@ -9,6 +9,7 @@ import {
 import {
   getUserById,
   getUsers,
+  resizeUserPhoto,
   updateUser,
   uploadUserPhoto,
 } from "../controllers/userControllers";
@@ -24,9 +25,9 @@ router.use(verifyIsLoggedIn);
 router.route("/").get(getUsers);
 router.route("/:nickname").get(getUsers);
 // created to fill the inputs with default values in personal profile page
-router.route("/profile/:id").get(getUserById);
+router.route("/account/profile").get(getUserById);
 // created to change the data in personal profile page
-router.route("/profile/settings").put(uploadUserPhoto, updateUser);
+router.route("/account").patch(updateUser);
 router.route("/logout").delete(logout);
 
 module.exports = router;
