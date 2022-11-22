@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
+import { userInfo } from "os";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
 
@@ -42,34 +43,51 @@ export const updateUser = async (
 ) => {
   try {
     // getting the user data from database (based on the token)
-    const user = await User.findById(req.user?.id);
-    console.log(user);
-    if (!user) {
+    const opts = { runValidators: true };
+
+    if (!req.user) {
       return res.status(400).json({
         status: "failed",
         message: "invalid credentials",
       });
     }
+
     if (req.body.nickname) {
-      user.nickname = req.body.nickname;
-    }
-    user.password = req.body.password || user.password;
-    if (req.file) {
-      user.photo = req.file.filename;
-    }
-
-    if (req.body.oldPassword && req.body.oldPassword === user.password) {
-      user.password = req.body.password;
-    }
-    if (req.body.oldPassword && req.body.oldPassword !== user.password) {
-      return res.status(400).json({
-        status: "failed",
-        message: "Invalid old password!",
-      });
+      await User.findOneAndUpdate(
+        { _id: req.user.id },
+        {
+          $set: { nickname: req.body.nickname },
+        },
+        opts
+      );
     }
 
-    await user.save();
-  } catch (error) {}
+    if (req.body.password) {
+      await User.findByIdAndUpdate(
+        req.user.id,
+        {
+          password: req.body.password,
+        },
+        opts
+      );
+    }
+
+    if (req.body.email) {
+      await User.findByIdAndUpdate(
+        req.user.id,
+        { email: req.body.email },
+        opts
+      );
+    }
+    return res.status(200).json({
+      status: "success",
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "failed",
+      message: error,
+    });
+  }
 };
 
 // Controller for getting user by ID (I will probably not merge this controller with the first getUser, the cause is authorization and the usage of information)

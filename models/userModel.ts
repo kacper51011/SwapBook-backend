@@ -18,6 +18,8 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
     unique: true,
+    minlength: 5,
+    maxlength: 20,
   },
   email: {
     type: String,
@@ -30,6 +32,7 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: true,
     select: false,
+    minlength: 6,
   },
   confirmPassword: {
     type: String,
