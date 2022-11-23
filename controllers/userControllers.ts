@@ -1,7 +1,12 @@
 import express, { Request, Response, NextFunction } from "express";
+import { Callback } from "mongoose";
+import { Multer } from "multer";
+import multer from "multer";
 import { userInfo } from "os";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
+import { nextTick } from "process";
+import sharp from "sharp";
 
 export interface IMulter {
   req: customRequest;
@@ -79,6 +84,12 @@ export const updateUser = async (
         opts
       );
     }
+
+    if (req.file) {
+      await User.findByIdAndUpdate(req.user.id, {
+        photo: req.file.originalname,
+      });
+    }
     return res.status(200).json({
       status: "success",
     });
@@ -116,58 +127,43 @@ export const getUserById = async (
 };
 
 // implementing image upload for user (photo)
-const multer = require("multer");
-const sharp = require("sharp");
 
-const multerStorage = multer.memoryStorage();
-
-// image filter
-
-const multerFilter = ({ req, file, cb }: IMulter) => {
-  const acceptableExtension = "jpg" || "png" || "jpeg";
-  const extension = file.mimetype.split("/")[1];
-  if (extension == acceptableExtension) {
-    cb(null, true);
-  } else {
-    cb(new Error("only images are allowed!"), false);
-  }
-};
+// storage of image
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/images/users/");
+  },
+  filename: function (req: customRequest, file, cb) {
+    cb(null, `user_${req.user?.id}_${Date.now()}.jpeg`);
+  },
+});
 
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter,
-  limits: { fileSize: 10000000 },
+  limits: { fileSize: 5 * 1000 * 1000 },
 });
+
 export const uploadUserPhoto = upload.single("photo");
 
-// todo in patch:
-
-export const resizeUserPhoto = async (
+export const updatePhoto = async (
   req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    // todo: in patch, check if user already have a photo, then delete the previous one
-    if (!req.file) return next();
-
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-
-    // setting filename
-    req.file.filename = `user-${req.user?.id}-${uniqueSuffix}.jpeg}`;
-
-    // resizing the image, etc
-    await sharp(req.file.buffer)
-      .resize(500, 500)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`../public/images/users/${req.file.filename}`);
-
-    next();
+    if (!req.file) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "something went wrong" });
+    }
+    await User.findByIdAndUpdate(req.user?.id, { photo: req.file.filename });
+    return res.status(200).json({
+      status: "success",
+      message: "works",
+    });
   } catch (err) {
     return res.status(400).json({
       status: "failed",
-      message: err,
     });
   }
 };
