@@ -7,6 +7,7 @@ interface IJWT {
   id: string;
   email: string;
   nickname: string;
+  photo: string;
 }
 
 export interface customRequest extends Request {
@@ -122,7 +123,11 @@ export const signIn = async (
     }
 
     const token = jwt.sign(
-      { id: user._id, nickname: user.nickname, email: user.email },
+      {
+        id: user._id,
+        nickname: user.nickname,
+        email: user.email,
+      },
       process.env.JWT_SECRET,
       {
         expiresIn: process.env.JWT_EXPIRE,
@@ -144,6 +149,7 @@ export const signIn = async (
         sameSite: "strict",
       };
     }
+    const photo = user.photo || "";
 
     res
       .status(200)
@@ -153,6 +159,7 @@ export const signIn = async (
         user: {
           id: user._id,
           nickname: user.nickname,
+          photo: photo,
         },
         cookieOptions: cookieOptions,
       });

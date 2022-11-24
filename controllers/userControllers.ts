@@ -1,12 +1,10 @@
 import express, { Request, Response, NextFunction } from "express";
-import { Callback } from "mongoose";
-import { Multer } from "multer";
+
 import multer from "multer";
-import { userInfo } from "os";
+
 import User from "../models/userModel";
 import { customRequest } from "./authController";
-import { nextTick } from "process";
-import sharp from "sharp";
+import { unlink, unlinkSync } from "fs";
 
 export interface IMulter {
   req: customRequest;
@@ -58,10 +56,10 @@ export const updateUser = async (
     }
 
     if (req.body.nickname) {
-      await User.findOneAndUpdate(
-        { _id: req.user.id },
+      await User.findByIdAndUpdate(
+        req.user.id,
         {
-          $set: { nickname: req.body.nickname },
+          nickname: req.body.nickname,
         },
         opts
       );
@@ -85,11 +83,6 @@ export const updateUser = async (
       );
     }
 
-    if (req.file) {
-      await User.findByIdAndUpdate(req.user.id, {
-        photo: req.file.originalname,
-      });
-    }
     return res.status(200).json({
       status: "success",
     });
@@ -151,19 +144,33 @@ export const updatePhoto = async (
   next: NextFunction
 ) => {
   try {
-    if (!req.file) {
+    if (!req.file || !req.user) {
       return res
         .status(401)
         .json({ status: "failed", message: "something went wrong" });
     }
+    const userData = await User.findById(req.user.id);
+
+    // deleting the old user photo if it exists
+
+    if (userData && userData.photo) {
+      const photo = userData.photo;
+      unlink(`./public/images/users/${photo}`, (err) => {
+        if (err) throw err;
+      });
+    }
+
+    // updating the user photo in mongo
     await User.findByIdAndUpdate(req.user?.id, { photo: req.file.filename });
+
     return res.status(200).json({
       status: "success",
-      message: "works",
+      data: req.file.filename,
     });
   } catch (err) {
     return res.status(400).json({
       status: "failed",
+      message: err,
     });
   }
 };
