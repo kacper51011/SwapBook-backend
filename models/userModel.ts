@@ -9,8 +9,8 @@ interface IUser {
   email: string;
   password: string;
   confirmPassword: string | undefined;
-  photo?: string;
-  swaps?: Types.ObjectId[];
+  photo: string;
+  swaps: Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -40,6 +40,7 @@ const userSchema = new Schema<IUser>({
 
   photo: {
     type: String,
+    default: "",
   },
   swaps: [{ type: Schema.Types.ObjectId, ref: "Book" }],
 });

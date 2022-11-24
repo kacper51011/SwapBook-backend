@@ -4,7 +4,7 @@ import multer from "multer";
 
 import User from "../models/userModel";
 import { customRequest } from "./authController";
-import { unlink, unlinkSync } from "fs";
+import { unlink } from "fs";
 
 export interface IMulter {
   req: customRequest;
@@ -171,6 +171,32 @@ export const updatePhoto = async (
     return res.status(400).json({
       status: "failed",
       message: err,
+    });
+  }
+};
+
+// getting the user swap offers
+export const getUserOffers = async (
+  req: customRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ status: "failed", message: "something went wrong" });
+    }
+    const userSwaps = await User.find({ _id: req.user.id }, { swaps: 1 });
+
+    res.status(200).json({
+      status: "success",
+      data: userSwaps,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      data: err,
     });
   }
 };
