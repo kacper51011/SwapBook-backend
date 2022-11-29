@@ -1,10 +1,10 @@
 import express from "express";
 import { verifyIsLoggedIn } from "../controllers/authController";
+import { deleteBook, uploadBookPhoto } from "../controllers/booksController";
 const {
   getBooks,
   createBook,
   getOneBook,
-  uploadImage,
 } = require("../controllers/booksController");
 
 const router = express.Router();
@@ -17,6 +17,7 @@ router.route("/search/:searchQuery").get(getBooks);
 router.route("/getBook/:id").get(getOneBook);
 // protected routes (only for logged in users)
 router.use(verifyIsLoggedIn);
-router.route("/create").post(createBook);
+router.route("/create").post(uploadBookPhoto, createBook);
+router.route(`/deleteBook/:bookId`).delete(deleteBook);
 
 module.exports = router;

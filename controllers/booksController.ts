@@ -1,9 +1,9 @@
 import express, { Request, Response, NextFunction, response } from "express";
-import fileUpload from "express-fileupload";
 import { Book } from "../models/bookModel";
 import User from "../models/userModel";
 import { customRequest } from "./authController";
-import { IMulter } from "./userControllers";
+import multer from "multer";
+import { unlink } from "fs";
 
 // todo: deleting books
 
@@ -104,7 +104,7 @@ export const getOneBook = async (
 
     const userId = oneBook?.createdBy;
 
-    const creator = await User.findById(userId).select("-email").select("-__v");
+    const creator = await User.findById(userId).select("-__v");
 
     return res.status(200).json({
       data: {
@@ -127,7 +127,6 @@ export const createBook = async (
   next: NextFunction
 ) => {
   try {
-    console.log("123");
     const {
       nameOfTheBook,
       author,
@@ -152,10 +151,10 @@ export const createBook = async (
     }
     const newBook = req.body;
     newBook.createdBy = req.user?.id;
+    newBook.bookPhoto = req.file?.filename;
 
     const createdBook = await Book.create(newBook);
     const creator = await User.findById(req.user?.id);
-    console.log(req.user);
 
     creator?.swaps?.push(createdBook._id);
     creator?.save();
@@ -167,6 +166,7 @@ export const createBook = async (
       },
     });
   } catch (err) {
+    console.log(err);
     return res.status(401).json({
       status: "fail",
       message: err,
@@ -175,57 +175,45 @@ export const createBook = async (
 };
 
 // implementing images upload for book(multiple, max 3 photos)
-const multer = require("multer");
+
 const sharp = require("sharp");
 
-const multerStorage = multer.memoryStorage();
-
-// book images filter
-
-const multerFilter = ({ req, file, cb }: IMulter) => {
-  const acceptableExtension = "jpg" || "png" || "jpeg";
-  const extension = file.mimetype.split("/")[1];
-  if (extension == acceptableExtension) {
-    cb(null, true);
-  } else {
-    cb(new Error("only images are allowed!"), false);
-  }
-};
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/images/books/");
+  },
+  filename: function (req: customRequest, file, cb) {
+    cb(null, `user_${req.user?.id}_${Date.now()}.jpeg`);
+  },
+});
 
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter,
-  limits: { fileSize: 15000000 },
+  limits: { fileSize: 5 * 1000 * 1000 },
 });
 
-export const uploadImages = upload.array("images", 3);
+export const uploadBookPhoto = upload.single("bookPhoto");
 
-// book images resizing
-
-export const resizeBookPhotos = async (
+export const deleteBook = async (
   req: customRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    if (!req.files || !req.files.images) return next();
+    const bookToDelete = await Book.findById(req.params.bookId);
+    if (bookToDelete && bookToDelete.bookPhoto) {
+      const photo = bookToDelete.bookPhoto;
+      unlink(`./public/images/books/${photo}`, (err) => {
+        if (err) throw err;
+      });
+    }
 
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-
-    // setting filename, cause it will be used in put controller later (as a jpeg default cause we will set it to jpeg with sharp)
-
-    const imageArray = req.files.images as fileUpload.UploadedFile[];
-    await Promise.all(
-      imageArray.map(async (file, i) => {
-        const filename = `book-${uniqueSuffix}-${i + 1}.jpeg`;
-      })
-    );
-
-    next();
-  } catch (err) {
+    await bookToDelete?.delete();
+    return res.status(202);
+  } catch (error) {
     return res.status(400).json({
       status: "failed",
-      message: err,
+      message: "couldnt`t delete the data",
     });
   }
 };

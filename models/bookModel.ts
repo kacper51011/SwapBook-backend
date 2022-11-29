@@ -13,7 +13,7 @@ interface IBook {
   created: Date;
   swapPlace: string;
   createdBy: Types.ObjectId;
-  bookImage?: string;
+  bookPhoto: string;
 }
 
 const bookSchema = new Schema<IBook>({
@@ -26,7 +26,7 @@ const bookSchema = new Schema<IBook>({
   swapPlace: { type: String, required: true },
   created: { type: Date, default: Date.now() },
   createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-  bookImage: { type: String },
+  bookPhoto: { type: String, required: true },
 });
 
 export const Book = mongoose.model("Book", bookSchema);

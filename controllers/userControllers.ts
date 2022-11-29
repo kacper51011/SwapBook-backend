@@ -183,15 +183,15 @@ export const getUserOffers = async (
 ) => {
   try {
     if (!req.user) {
-      return res
-        .status(401)
-        .json({ status: "failed", message: "something went wrong" });
+      return res.status(401).json({ status: "failed", message: "no User" });
     }
-    const userSwaps = await User.find({ _id: req.user.id }, { swaps: 1 });
+    const loggedUser = await User.findOne({ _id: req.user.id }).populate(
+      "swaps"
+    );
 
     res.status(200).json({
       status: "success",
-      data: userSwaps,
+      data: loggedUser?.swaps,
     });
   } catch (err) {
     res.status(400).json({
